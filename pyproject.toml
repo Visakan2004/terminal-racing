@@ -1,0 +1,9 @@
+[project]
+name = "terminal-racing"
+version = "1.0.0"
+description = "Terminal Racing - Extreme Combat Edition"
+readme = "README.md"
+requires-python = ">=3.9"
+
+[tool.vercel]
+entrypoint = "index.py:app"
