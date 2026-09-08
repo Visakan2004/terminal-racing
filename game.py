@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
-🏎️ TERMINAL RACING - Enhanced Arcade Edition
+🏎️ TERMINAL RACING - EXTREME COMBAT EDITION
 =============================================
-High-performance ASCII arcade racing game for Linux & Docker terminals.
-Featuring rich color effects, multiple car chassis, dynamic nitro boost,
-tire skid trails, near-miss combos, weather/day-night cycles, and headlamp beams.
+High-octane ASCII combat racing game for Linux & Docker terminals.
+Featuring weaponized hypercars, twin plasma shooters, target destruction,
+nitro turbo boost, tire drift trails, and dynamic particle combat FX.
 
 Controls:
   - Steer: [Left / A] or [Right / D]
+  - Shoot Cannons: [Space / J / F / Enter]
   - Nitro Turbo Boost: [Up / W / Shift]
   - Switch Car: [C]
   - Pause: [P]
@@ -49,100 +50,112 @@ CAR_HEIGHT = 3           # Standard ASCII car height
 HIGH_SCORE_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "highscore.txt")
 
 # -----------------------------------------------------------------------------
-# Player Car Models (Selectable with [C])
+# Extreme Combat Car Models (Selectable with [C])
 # -----------------------------------------------------------------------------
 PLAYER_CARS = [
     {
-        "name": "HYPER TURBO GT",
-        "desc": "Aerodynamic speedster with dual rear diffusers",
+        "name": "⚡ APEX V12 RAILGUN",
+        "weapon_name": "TWIN PLASMA",
+        "bullet_char": "║",
+        "desc": "Dual railgun cannons with high-velocity plasma bolts",
         "sprites": {
             "straight": [
-                r" /▲\ ",
-                r"|█▓█|",
+                r"╓/▲\╖",
+                r"║█▓█║",
                 r"db=db",
             ],
             "left": [
-                r"/▲\  ",
+                r"╓/▲\ ",
                 r"\\█▓\\",
                 r"db=db",
             ],
             "right": [
-                r"  /▲\\",
+                r" /▲\╖",
                 r"//█▓//",
                 r"db=db",
             ],
         },
-        "color_pair": 4, # CP_PLAYER
+        "color_pair": 4,   # CP_PLAYER
         "flame_color": 14, # CP_NITRO
+        "bullet_color": 14,# CP_NITRO
     },
     {
-        "name": "CYBERPUNK RACER",
-        "desc": "Neon-infused night runner with energy coils",
+        "name": "🚀 CYBER WARSHIP",
+        "weapon_name": "EMP LIGHTNING",
+        "bullet_char": "⚡",
+        "desc": "Heavy armored dreadnought with chain lightning blasters",
         "sprites": {
             "straight": [
-                r" /══\ ",
-                r"|⚡P⚡|",
-                r"d---b",
+                r"▲/══\▲",
+                r"║⚡X⚡║",
+                r"d-==-b",
             ],
             "left": [
-                r"/══\  ",
-                r"\\⚡P\\",
-                r"d---b",
+                r"▲/══\ ",
+                r"\\⚡X\\",
+                r"d-==-b",
             ],
             "right": [
-                r"  /══\\",
-                r"//P⚡//",
-                r"d---b",
+                r" /══\▲",
+                r"//X⚡//",
+                r"d-==-b",
             ],
         },
-        "color_pair": 17, # CP_CYBER
+        "color_pair": 17,  # CP_CYBER
         "flame_color": 16, # CP_SPARK
+        "bullet_color": 17,# CP_CYBER
     },
     {
-        "name": "STREET DRIFT SPEC",
-        "desc": "Widebody tuner with high-downforce wing",
+        "name": "🔥 PHANTOM DRIFT GT",
+        "weapon_name": "VULCAN CANNON",
+        "bullet_char": "!",
+        "desc": "Widebody tuner equipped with rapid-fire rotary vulcan",
         "sprites": {
             "straight": [
-                r" /──\ ",
-                r"|[GT]|",
-                r"d═══b",
+                r"▌/──\▐",
+                r"║[GT]║",
+                r"d════b",
             ],
             "left": [
-                r"/──\  ",
+                r"▌/──\ ",
                 r"\\GT\\",
-                r"d═══b",
+                r"d════b",
             ],
             "right": [
-                r"  /──\\",
+                r" /──\▐",
                 r"//GT//",
-                r"d═══b",
+                r"d════b",
             ],
         },
-        "color_pair": 18, # CP_GOLD
+        "color_pair": 18,  # CP_GOLD
         "flame_color": 14,
+        "bullet_color": 18,
     },
     {
-        "name": "POLICE INTERCEPTOR",
-        "desc": "Twin-turbo pursuit cruiser with flashing lights",
+        "name": "🚨 POLICE ENFORCER",
+        "weapon_name": "MICRO ROCKETS",
+        "bullet_char": "▲",
+        "desc": "Armored Interceptor loaded with tandem anti-vehicle rockets",
         "sprites": {
             "straight": [
-                r" .[!]. ",
-                r"|911|",
-                r"d---b",
+                r"!.[P].!",
+                r"║*911*║",
+                r"d----b",
             ],
             "left": [
-                r" .[!]. ",
+                r"!.[P]. ",
                 r"\\911\\",
-                r"d---b",
+                r"d----b",
             ],
             "right": [
-                r" .[!]. ",
+                r" .[P].!",
                 r"//911//",
-                r"d---b",
+                r"d----b",
             ],
         },
-        "color_pair": 19, # CP_POLICE
+        "color_pair": 19,  # CP_POLICE
         "flame_color": 14,
+        "bullet_color": 5, # Red
     },
 ]
 
@@ -150,26 +163,26 @@ PLAYER_CARS = [
 PLAYER_SPRITE = PLAYER_CARS[0]["sprites"]["straight"]
 
 # -----------------------------------------------------------------------------
-# Enemy Car Models & Sprites
+# Extreme Enemy Car Models & Sprites
 # -----------------------------------------------------------------------------
 ENEMY_SPRITES = [
-    # 0: Sport Sedan
+    # 0: Sport Coupe
     [
-        r" .-. ",
-        r"|[1]|",
+        r" ┌─┐ ",
+        r"|{1}|",
         r"'-=-'",
     ],
-    # 1: Red Rival Racer
+    # 1: Armored Rival Racer
     [
-        r" /V\ ",
+        r" ╔▲╗ ",
         r"|{X}|",
         r"d---b",
     ],
-    # 2: Big-Rig Cargo Van
+    # 2: Heavy Tanker Van
     [
-        r"|===|",
-        r"| TR|",
-        r"|===|",
+        r"[═══]",
+        r"|TNT|",
+        r"[###]",
     ],
     # 3: City Taxi
     [
@@ -177,14 +190,14 @@ ENEMY_SPRITES = [
         r"|TXI|",
         r"'-=-'",
     ],
-    # 4: Heavy Transport Truck (Tall)
+    # 4: Heavy Military Convoy Rig (Tall)
     [
-        r"[═══]",
-        r"|CAR|",
-        r"|GO!|",
-        r"[###]",
+        r"[╬══╬]",
+        r"|WAR |",
+        r"|RIG |",
+        r"[####]",
     ],
-    # 5: Street Muscle Car
+    # 5: Street Muscle Predator
     [
         r" /──\ ",
         r"|{M}|",
@@ -225,6 +238,16 @@ CP_HEADLIGHT = 21
 
 
 @dataclass
+class Bullet:
+    x: float
+    y: float
+    char: str
+    color_pair: int
+    vy: float = -28.0
+    active: bool = True
+
+
+@dataclass
 class Particle:
     x: float
     y: float
@@ -261,10 +284,12 @@ class Enemy:
     sprite_type: int
     passed: bool = False
     is_tall: bool = False
+    health: int = 1
 
     def __post_init__(self):
         if self.sprite_type == 4:
             self.is_tall = True
+            self.health = 2
 
     @property
     def sprite(self) -> List[str]:
@@ -372,7 +397,6 @@ class TerminalRacingGame:
                 curses.start_color()
                 curses.use_default_colors()
 
-                # Basic palettes
                 curses.init_pair(CP_DEFAULT, curses.COLOR_WHITE, -1)
                 curses.init_pair(CP_ROAD_BORDER, curses.COLOR_CYAN, -1)
                 curses.init_pair(CP_ROAD_LANE, curses.COLOR_YELLOW, -1)
@@ -387,7 +411,6 @@ class TerminalRacingGame:
                 curses.init_pair(CP_TITLE, curses.COLOR_YELLOW, -1)
                 curses.init_pair(CP_GRASS, curses.COLOR_GREEN, -1)
 
-                # Extended effect palettes
                 curses.init_pair(CP_NITRO, curses.COLOR_CYAN, -1)
                 curses.init_pair(CP_SKID, curses.COLOR_BLACK, -1)
                 curses.init_pair(CP_SPARK, curses.COLOR_YELLOW, -1)
@@ -401,19 +424,24 @@ class TerminalRacingGame:
 
     def reset_game_state(self) -> None:
         """Reset all variables for a fresh game session."""
-        self.state = "START_SCREEN"  # START_SCREEN, PLAYING, PAUSED, CRASHING, GAME_OVER
+        self.state = "START_SCREEN"
         self.score = 0
         self.distance = 0.0
         self.enemies_passed = 0
+        self.enemies_destroyed = 0
         self.lives = 3
         self.speed_kmh = 60.0
         self.target_speed_kmh = 60.0
         self.level = 1
 
+        # Combat & Shooter System
+        self.bullets: List[Bullet] = []
+        self.ammo_energy = 100.0
+        self.shoot_cooldown = 0.0
+
         # Nitro turbo system
         self.nitro_fuel = 100.0
         self.is_boosting = False
-        self.nitro_cooldown = 0.0
 
         # Combo & Near-miss system
         self.combo_count = 0
@@ -421,24 +449,22 @@ class TerminalRacingGame:
         self.combo_timer = 0.0
 
         # Visual steering tilt
-        self.tilt_state = "straight"  # "straight", "left", "right"
+        self.tilt_state = "straight"
         self.tilt_timer = 0.0
 
         # Particle effects & trails
         self.particles: List[Particle] = []
         self.floating_texts: List[FloatingText] = []
         self.skid_marks: List[SkidMark] = []
-        self.rain_drops: List[Tuple[float, float, str]] = []
 
         # Road animation & environment
         self.road_scroll_offset = 0.0
-        self.day_time = 0.0  # 0.0 to 100.0 cycle for Day -> Sunset -> Night
+        self.day_time = 0.0
         self.siren_tick = 0
 
         self.enemies: List[Enemy] = []
         self.update_dimensions()
 
-        # Place player in middle lane near bottom
         self.player_x = float(self.get_lane_x(1))
         self.player_y = float(self.road_bottom - CAR_HEIGHT - 1)
 
@@ -450,20 +476,65 @@ class TerminalRacingGame:
         """Recalculate layout coordinates based on terminal size."""
         self.term_height, self.term_width = self.stdscr.getmaxyx()
 
-        # Road layout
         self.road_height = max(16, self.term_height - 6)
         self.road_top = 2
         self.road_bottom = self.road_top + self.road_height
         self.road_left = max(2, (self.term_width - ROAD_WIDTH) // 2 - 7)
         self.road_right = self.road_left + ROAD_WIDTH
 
-        # HUD Side Panel
         self.hud_left = self.road_right + 3
 
     def get_lane_x(self, lane_index: int) -> int:
         """Calculate X coordinate for a given lane (0, 1, or 2)."""
         lane_inner_x = self.road_left + 1 + (lane_index * (LANE_WIDTH + 1))
         return lane_inner_x + max(0, (LANE_WIDTH - CAR_WIDTH) // 2)
+
+    def shoot(self) -> bool:
+        """Fire mounted twin cannons from the player car."""
+        if self.shoot_cooldown > 0 or self.ammo_energy < 12.0:
+            return False
+
+        self.ammo_energy = max(0.0, self.ammo_energy - 15.0)
+        self.shoot_cooldown = 0.18
+
+        car_info = PLAYER_CARS[self.selected_car_index]
+        bullet_char = car_info["bullet_char"]
+        bullet_color = car_info["bullet_color"]
+
+        # Left cannon bullet
+        self.bullets.append(
+            Bullet(
+                x=float(self.player_x),
+                y=float(self.player_y - 1),
+                char=bullet_char,
+                color_pair=bullet_color,
+            )
+        )
+        # Right cannon bullet
+        self.bullets.append(
+            Bullet(
+                x=float(self.player_x + CAR_WIDTH - 1),
+                y=float(self.player_y - 1),
+                char=bullet_char,
+                color_pair=bullet_color,
+            )
+        )
+
+        # Muzzle flashes
+        for mx in (self.player_x, self.player_x + CAR_WIDTH - 1):
+            self.particles.append(
+                Particle(
+                    x=mx,
+                    y=self.player_y - 0.5,
+                    char="✦",
+                    color_pair=bullet_color,
+                    life=0.15,
+                    max_life=0.15,
+                    vy=-1.0,
+                )
+            )
+
+        return True
 
     def trigger_near_miss(self, enemy: Enemy) -> None:
         """Award combo points and trigger floating text effect for thrilling near-misses."""
@@ -473,7 +544,6 @@ class TerminalRacingGame:
         bonus = int(100 * self.combo_multiplier)
         self.score += bonus
 
-        # Floating popup above car
         tag = "NEAR MISS!" if self.combo_count == 1 else f"COMBO x{self.combo_multiplier:.1f}!"
         self.floating_texts.append(
             FloatingText(
@@ -485,7 +555,6 @@ class TerminalRacingGame:
             )
         )
 
-        # Sparks near the player chassis
         for _ in range(6):
             self.particles.append(
                 Particle(
@@ -512,7 +581,7 @@ class TerminalRacingGame:
 
         free_lanes = [l for l in range(ROAD_LANES) if l not in occupied_lanes]
         if not free_lanes:
-            return  # Prevent impossible wall
+            return
 
         target_lane = random.choice(free_lanes)
         spawn_x = float(self.get_lane_x(target_lane))
@@ -553,11 +622,9 @@ class TerminalRacingGame:
         if key == -1:
             return True
 
-        # Quit keys
-        if key in (ord("q"), ord("Q"), 27):  # 27 = Escape
+        if key in (ord("q"), ord("Q"), 27):  # Escape
             return False
 
-        # Start Screen input
         if self.state == "START_SCREEN":
             if key in (ord("c"), ord("C")):
                 self.selected_car_index = (self.selected_car_index + 1) % len(PLAYER_CARS)
@@ -566,14 +633,12 @@ class TerminalRacingGame:
                 self.state = "PLAYING"
             return True
 
-        # Game Over input
         if self.state == "GAME_OVER":
             if key in (ord("r"), ord("R"), ord(" "), ord("\n"), curses.KEY_ENTER):
                 self.reset_game_state()
                 self.state = "PLAYING"
             return True
 
-        # Pause toggle
         if key in (ord("p"), ord("P")):
             if self.state == "PLAYING":
                 self.state = "PAUSED"
@@ -581,10 +646,13 @@ class TerminalRacingGame:
                 self.state = "PLAYING"
             return True
 
-        # Active gameplay controls
         if self.state == "PLAYING":
-            # Switch car in game
-            if key in (ord("c"), ord("C")):
+            # Shoot weapon
+            if key in (ord(" "), ord("j"), ord("J"), ord("f"), ord("F"), ord("\n"), ord("\r"), curses.KEY_ENTER):
+                self.shoot()
+
+            # Switch car chassis
+            elif key in (ord("c"), ord("C")):
                 self.selected_car_index = (self.selected_car_index + 1) % len(PLAYER_CARS)
                 car_name = PLAYER_CARS[self.selected_car_index]["name"]
                 self.floating_texts.append(
@@ -603,7 +671,6 @@ class TerminalRacingGame:
                 self.player_x = max(min_x, self.player_x - 3)
                 self.tilt_state = "left"
                 self.tilt_timer = 0.25
-                # Add drift skid mark
                 self.skid_marks.append(SkidMark(x=int(self.player_x + 1), y=self.player_y + CAR_HEIGHT, char="/"))
                 self.skid_marks.append(SkidMark(x=int(self.player_x + CAR_WIDTH - 2), y=self.player_y + CAR_HEIGHT, char="/"))
 
@@ -613,12 +680,11 @@ class TerminalRacingGame:
                 self.player_x = min(max_x, self.player_x + 3)
                 self.tilt_state = "right"
                 self.tilt_timer = 0.25
-                # Add drift skid mark
                 self.skid_marks.append(SkidMark(x=int(self.player_x + 1), y=self.player_y + CAR_HEIGHT, char="\\"))
                 self.skid_marks.append(SkidMark(x=int(self.player_x + CAR_WIDTH - 2), y=self.player_y + CAR_HEIGHT, char="\\"))
 
             # Nitro Boost
-            elif key in (curses.KEY_UP, ord("w"), ord("W"), ord(" "), ord("\t")):
+            elif key in (curses.KEY_UP, ord("w"), ord("W"), ord("\t")):
                 if self.nitro_fuel >= 15.0:
                     self.is_boosting = True
                     self.nitro_fuel = max(0.0, self.nitro_fuel - 20.0)
@@ -635,24 +701,27 @@ class TerminalRacingGame:
         return True
 
     def update(self, dt: float) -> None:
-        """Update game physics, enemies, particles, and score."""
+        """Update game physics, bullets, enemies, particles, and score."""
         if self.state != "PLAYING" and self.state != "CRASHING":
             return
 
         self.siren_tick = (self.siren_tick + 1) % 60
         self.day_time = (self.day_time + (dt * 1.5)) % 100.0
 
-        # Tilt recovery timer
+        if self.shoot_cooldown > 0:
+            self.shoot_cooldown -= dt
+
+        # Energy reload
+        self.ammo_energy = min(100.0, self.ammo_energy + (dt * 30.0))
+
         if self.tilt_timer > 0:
             self.tilt_timer -= dt
             if self.tilt_timer <= 0:
                 self.tilt_state = "straight"
 
-        # Handle crash explosion and recovery
         if self.state == "CRASHING":
             self.crash_timer -= dt
 
-            # Spawn explosion debris particles
             if random.random() < 0.8:
                 for _ in range(4):
                     self.particles.append(
@@ -690,35 +759,29 @@ class TerminalRacingGame:
             self.target_speed_kmh = 60.0 + min(160.0, self.distance * 0.15 + self.enemies_passed * 8.0)
             self.nitro_fuel = min(100.0, self.nitro_fuel + (dt * 12.0))
 
-        # Smooth speed interpolation
         self.speed_kmh += (self.target_speed_kmh - self.speed_kmh) * min(1.0, dt * 4.0)
-
-        # Simulation speed factor
         sim_speed = (self.speed_kmh / 60.0) * 12.0 * dt
 
         # Distance & Score
         self.distance += sim_speed * 1.5
-        base_score = int(self.distance) + (self.enemies_passed * 50)
+        base_score = int(self.distance) + (self.enemies_passed * 50) + (self.enemies_destroyed * 200)
         self.score = base_score + (self.combo_count * 25)
         self.level = 1 + int(self.score / 500)
         if self.score > self.high_score:
             self.high_score = self.score
 
-        # Combo timer decay
         if self.combo_timer > 0:
             self.combo_timer -= dt
             if self.combo_timer <= 0:
                 self.combo_count = 0
                 self.combo_multiplier = 1.0
 
-        # Road scroll animation
         self.road_scroll_offset = (self.road_scroll_offset + sim_speed) % 4
 
-        # Spawn exhaust flame particles behind tires
+        # Exhaust particles
         flame_color = PLAYER_CARS[self.selected_car_index]["flame_color"]
         if self.is_boosting or random.random() < 0.6:
             flame_char = random.choice(["🔥", "^", "*", "!", ":", "▲"]) if self.is_boosting else random.choice(["^", "·", ":", "."])
-            # Left wheel flame
             self.particles.append(
                 Particle(
                     x=self.player_x + 0.5,
@@ -730,7 +793,6 @@ class TerminalRacingGame:
                     vy=random.uniform(0.5, 1.5),
                 )
             )
-            # Right wheel flame
             self.particles.append(
                 Particle(
                     x=self.player_x + CAR_WIDTH - 1.5,
@@ -742,6 +804,14 @@ class TerminalRacingGame:
                     vy=random.uniform(0.5, 1.5),
                 )
             )
+
+        # Update bullets
+        live_bullets = []
+        for b in self.bullets:
+            b.y += b.vy * dt
+            if b.y >= self.road_top:
+                live_bullets.append(b)
+        self.bullets = live_bullets
 
         # Update and cull particles
         live_particles = []
@@ -778,21 +848,73 @@ class TerminalRacingGame:
             self.spawn_timer = 0.0
             self.spawn_enemy()
 
-        # Update enemies & collision
+        # Update enemies & bullet collision
         surviving_enemies = []
         for enemy in self.enemies:
             enemy.y += (sim_speed * 0.75 * enemy.speed)
+
+            # Check collision with bullets
+            enemy_hit = False
+            for b in self.bullets:
+                if b.active and (enemy.x <= b.x <= enemy.x + CAR_WIDTH) and (enemy.y <= b.y <= enemy.y + enemy.height):
+                    b.active = False
+                    enemy.health -= 1
+                    if enemy.health <= 0:
+                        enemy_hit = True
+                        self.enemies_destroyed += 1
+                        kill_bonus = 250
+                        self.score += kill_bonus
+
+                        # Floating Kill Popup
+                        self.floating_texts.append(
+                            FloatingText(
+                                x=float(enemy.x),
+                                y=float(enemy.y),
+                                text=f"+{kill_bonus} 💥DESTROYED!",
+                                color_pair=CP_GOLD,
+                                life=1.2,
+                            )
+                        )
+
+                        # Explosion debris
+                        for _ in range(8):
+                            self.particles.append(
+                                Particle(
+                                    x=enemy.x + random.uniform(0, CAR_WIDTH),
+                                    y=enemy.y + random.uniform(0, enemy.height),
+                                    char=random.choice(["💥", "*", "#", "!", "•"]),
+                                    color_pair=random.choice([CP_CRASH, CP_SPARK, CP_GOLD]),
+                                    life=0.5,
+                                    max_life=0.5,
+                                    vx=random.uniform(-3.0, 3.0),
+                                    vy=random.uniform(-2.0, 2.0),
+                                )
+                            )
+                        break
+                    else:
+                        # Heavy truck flash
+                        self.particles.append(
+                            Particle(
+                                x=b.x,
+                                y=b.y,
+                                char="✦",
+                                color_pair=CP_SPARK,
+                                life=0.2,
+                                max_life=0.2,
+                            )
+                        )
+
+            if enemy_hit:
+                continue
 
             # Check if player overtook this enemy
             if not enemy.passed and enemy.y > (self.player_y + CAR_HEIGHT):
                 enemy.passed = True
                 self.enemies_passed += 1
-
-                # Check near-miss condition (close horizontal distance)
                 if abs(self.player_x - enemy.x) <= (CAR_WIDTH + 2):
                     self.trigger_near_miss(enemy)
 
-            # Check collision
+            # Check collision with player
             if self.check_collision(enemy):
                 self.lives -= 1
                 self.state = "CRASHING"
@@ -805,6 +927,7 @@ class TerminalRacingGame:
                 surviving_enemies.append(enemy)
 
         self.enemies = surviving_enemies
+        self.bullets = [b for b in self.bullets if b.active]
 
     def safe_addstr(self, y: int, x: int, text: str, attr: int = 0) -> None:
         """Safely render text within window bounds without throwing curses errors."""
@@ -826,12 +949,10 @@ class TerminalRacingGame:
             return attr
 
     def draw_road(self) -> None:
-        """Render the road borders, asphalt, headlight illumination, and scrolling lane dividers."""
+        """Render the road borders, asphalt, headlight illumination, and lane dividers."""
         offset = int(self.road_scroll_offset)
-        is_night = self.day_time > 60.0
 
         for y in range(self.road_top, self.road_bottom):
-            # Left & Right roadside scenery
             if self.road_left > 0:
                 scenery_char = "♣" if ((y + offset) % 6 == 0) else "|"
                 self.safe_addstr(y, self.road_left - 1, scenery_char, self.cp(CP_GRASS))
@@ -839,19 +960,15 @@ class TerminalRacingGame:
                 scenery_char = "♦" if ((y + offset + 2) % 6 == 0) else "|"
                 self.safe_addstr(y, self.road_right, scenery_char, self.cp(CP_GRASS))
 
-            # Road Left Border
             self.safe_addstr(y, self.road_left, "║", self.cp(CP_ROAD_BORDER, curses.A_BOLD if curses else 0))
 
-            # Road asphalt fill (with speed streaks if high speed or night lighting)
             asphalt_char = " "
             if self.is_boosting and ((y + offset) % 5 == 0):
                 asphalt_char = "·"
             self.safe_addstr(y, self.road_left + 1, asphalt_char * (ROAD_WIDTH - 2), self.cp(CP_DEFAULT))
 
-            # Road Right Border
             self.safe_addstr(y, self.road_right - 1, "║", self.cp(CP_ROAD_BORDER, curses.A_BOLD if curses else 0))
 
-            # Lane Dividers
             is_dash = ((y + offset) % 4) < 2
             char = "│" if is_dash else " "
             for lane in range(1, ROAD_LANES):
@@ -865,7 +982,7 @@ class TerminalRacingGame:
             if self.road_top <= sy < self.road_bottom and self.road_left < sk.x < self.road_right - 1:
                 self.safe_addstr(sy, sk.x, sk.char, self.cp(CP_DEFAULT, curses.A_DIM if curses else 0))
 
-        # Headlight Beams projecting ahead of player car
+        # Headlight Beams
         if self.state == "PLAYING":
             px = int(self.player_x)
             py = int(self.player_y)
@@ -878,7 +995,7 @@ class TerminalRacingGame:
                     self.safe_addstr(beam_y, beam_right - 1, "/", self.cp(CP_HEADLIGHT, curses.A_DIM if curses else 0))
 
     def draw_player(self) -> None:
-        """Render the player car with dynamic tilt and particle effects."""
+        """Render the player car with weapon mounts and dynamic tilt."""
         px = int(self.player_x)
         py = int(self.player_y)
         car_info = PLAYER_CARS[self.selected_car_index]
@@ -890,7 +1007,6 @@ class TerminalRacingGame:
             sprite = car_info["sprites"].get(self.tilt_state, car_info["sprites"]["straight"])
             for i, line in enumerate(sprite):
                 color = car_info["color_pair"]
-                # If police car, alternate flashing light
                 if self.selected_car_index == 3 and i == 0:
                     color = CP_ENEMY_1 if (self.siren_tick % 10 < 5) else CP_POLICE
                 self.safe_addstr(py + i, px, line, self.cp(color, curses.A_BOLD if curses else 0))
@@ -906,16 +1022,22 @@ class TerminalRacingGame:
                 if self.road_top <= row < self.road_bottom:
                     self.safe_addstr(row, ex, line, self.cp(enemy.color_pair, curses.A_BOLD if curses else 0))
 
+    def draw_bullets(self) -> None:
+        """Render active cannon bullets and laser projectiles."""
+        for b in self.bullets:
+            by = int(b.y)
+            bx = int(b.x)
+            if self.road_top <= by < self.road_bottom and 0 <= bx < self.term_width:
+                self.safe_addstr(by, bx, b.char, self.cp(b.color_pair, curses.A_BOLD if curses else 0))
+
     def draw_particles_and_popups(self) -> None:
         """Render all active particles and floating combo texts."""
-        # Particles
         for p in self.particles:
             py = int(p.y)
             px = int(p.x)
             if self.road_top <= py < self.road_bottom and 0 <= px < self.term_width:
                 self.safe_addstr(py, px, p.char, self.cp(p.color_pair, curses.A_BOLD if curses else 0))
 
-        # Floating Popups
         for ft in self.floating_texts:
             fy = int(ft.y)
             fx = int(ft.x)
@@ -923,8 +1045,8 @@ class TerminalRacingGame:
                 self.safe_addstr(fy, fx, ft.text, self.cp(ft.color_pair, curses.A_BOLD if curses else 0))
 
     def draw_hud(self) -> None:
-        """Render the dashboard, tachometer, nitro meter, and combo status."""
-        title = " ═══ 🏎️ TERMINAL RACING ARCADE ═══ "
+        """Render the dashboard, weapon ammo, tachometer, and combat counters."""
+        title = " ═══ 🏎️ TERMINAL RACING: EXTREME COMBAT ═══ "
         title_x = max(2, (self.term_width - len(title)) // 2)
         self.safe_addstr(0, title_x, title, self.cp(CP_TITLE, curses.A_BOLD if curses else 0))
 
@@ -932,50 +1054,48 @@ class TerminalRacingGame:
         hy = self.road_top + 1
         hud_w = 23
 
-        # Border for HUD
         self.safe_addstr(hy - 1, hx, "╔" + "═" * (hud_w - 2) + "╗", self.cp(CP_HUD_LABEL))
-        self.safe_addstr(hy + 0, hx, "║  DASHBOARD & GAUGES ║", self.cp(CP_TITLE, curses.A_BOLD if curses else 0))
+        self.safe_addstr(hy + 0, hx, "║  COMBAT DASHBOARD   ║", self.cp(CP_TITLE, curses.A_BOLD if curses else 0))
         self.safe_addstr(hy + 1, hx, "╠" + "═" * (hud_w - 2) + "╣", self.cp(CP_HUD_LABEL))
 
         # Score & High Score
         self.safe_addstr(hy + 2, hx, f"║ Score : {self.score:<11} ║", self.cp(CP_HUD_VALUE))
         self.safe_addstr(hy + 3, hx, f"║ Best  : {self.high_score:<11} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
 
-        # Lives
+        # Lives & Kills
         lives_display = "♥ " * self.lives + "· " * (3 - self.lives)
         self.safe_addstr(hy + 4, hx, f"║ Lives : {lives_display:<11} ║", self.cp(CP_ENEMY_1, curses.A_BOLD if curses else 0))
+        self.safe_addstr(hy + 5, hx, f"║ Kills : 💥 {self.enemies_destroyed:<8} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
 
-        # Speedometer with color alert
+        # Speedometer
         speed_int = int(self.speed_kmh)
         speed_color = CP_ENEMY_1 if speed_int >= 180 else (CP_GOLD if speed_int >= 120 else CP_HUD_VALUE)
-        self.safe_addstr(hy + 5, hx, f"║ Speed : {speed_int:>3} km/h{' ' * 5} ║", self.cp(speed_color, curses.A_BOLD if curses else 0))
+        self.safe_addstr(hy + 6, hx, f"║ Speed : {speed_int:>3} km/h{' ' * 5} ║", self.cp(speed_color, curses.A_BOLD if curses else 0))
+
+        # Weapon Cannon Ammo / Energy
+        energy_bars = int((self.ammo_energy / 100.0) * 8)
+        energy_str = "█" * energy_bars + "░" * (8 - energy_bars)
+        self.safe_addstr(hy + 7, hx, f"║ Ammo  : [{energy_str}] ║", self.cp(CP_SPARK, curses.A_BOLD if curses else 0))
 
         # Nitro Gauge Bar
         nitro_bars = int((self.nitro_fuel / 100.0) * 8)
         nitro_bar_str = "█" * nitro_bars + "░" * (8 - nitro_bars)
         nitro_label = "⚡ BOOST!" if self.is_boosting else f"[{nitro_bar_str}]"
-        self.safe_addstr(hy + 6, hx, f"║ Nitro : {nitro_label:<11} ║", self.cp(CP_NITRO, curses.A_BOLD if curses else 0))
+        self.safe_addstr(hy + 8, hx, f"║ Nitro : {nitro_label:<11} ║", self.cp(CP_NITRO, curses.A_BOLD if curses else 0))
 
-        # Combo Multiplier
-        combo_str = f"x{self.combo_multiplier:.1f} 🔥" if self.combo_count > 0 else "---"
-        self.safe_addstr(hy + 7, hx, f"║ Combo : {combo_str:<11} ║", self.cp(CP_COMBO, curses.A_BOLD if curses else 0))
+        # Weapon & Car Model
+        car_info = PLAYER_CARS[self.selected_car_index]
+        self.safe_addstr(hy + 9, hx, f"║ Gun   : {car_info['weapon_name'][:11]:<11} ║", self.cp(CP_CYBER))
+        self.safe_addstr(hy + 10, hx, f"║ Car   : {car_info['name'][:11]:<11} ║", self.cp(car_info["color_pair"], curses.A_BOLD if curses else 0))
 
-        # Active Car Model
-        car_short = PLAYER_CARS[self.selected_car_index]["name"][:11]
-        self.safe_addstr(hy + 8, hx, f"║ Car   : {car_short:<11} ║", self.cp(CP_CYBER))
+        self.safe_addstr(hy + 11, hx, "╚" + "═" * (hud_w - 2) + "╝", self.cp(CP_HUD_LABEL))
 
-        # Level & Passed
-        self.safe_addstr(hy + 9, hx, f"║ Lvl/Pass: {self.level}/{self.enemies_passed:<8} ║", self.cp(CP_HUD_VALUE))
-
-        self.safe_addstr(hy + 10, hx, "╚" + "═" * (hud_w - 2) + "╝", self.cp(CP_HUD_LABEL))
-
-        # Controls reference at bottom
-        footer = "[A/D / ←/→] Steer  [W / ↑] Nitro  [C] Car  [P] Pause  [Q] Quit"
+        footer = "[A/D] Steer  [SPACE] SHOOT  [W] Nitro  [C] Car  [P] Pause  [Q] Quit"
         self.safe_addstr(self.term_height - 2, max(2, (self.term_width - len(footer)) // 2), footer, self.cp(CP_DEFAULT, curses.A_DIM if curses else 0))
 
     def draw_start_screen(self) -> None:
-        """Render the start menu with car preview and controls."""
-        center_y = max(1, self.term_height // 2 - 8)
+        """Render the start menu with car preview and combat controls."""
+        center_y = max(1, self.term_height // 2 - 9)
         center_x = max(2, (self.term_width - 48) // 2)
 
         logo = [
@@ -1000,22 +1120,24 @@ class TerminalRacingGame:
 
         car_info = PLAYER_CARS[self.selected_car_index]
         self.safe_addstr(box_y, bx, "╔" + "═" * (box_w - 2) + "╗", self.cp(CP_ROAD_BORDER))
-        self.safe_addstr(box_y + 1, bx, "║          🔥 ARCADE TURBO EDITION 🔥           ║", self.cp(CP_TITLE, curses.A_BOLD if curses else 0))
+        self.safe_addstr(box_y + 1, bx, "║       💥 EXTREME COMBAT & SHOOTER EDITION 💥  ║", self.cp(CP_TITLE, curses.A_BOLD if curses else 0))
         self.safe_addstr(box_y + 2, bx, "╠" + "═" * (box_w - 2) + "╣", self.cp(CP_ROAD_BORDER))
-        self.safe_addstr(box_y + 3, bx, f"║  Selected Car [Press C to switch]:           ║", self.cp(CP_HUD_LABEL))
+        self.safe_addstr(box_y + 3, bx, f"║  Selected Weaponized Vehicle [Press C]:      ║", self.cp(CP_HUD_LABEL))
         self.safe_addstr(box_y + 4, bx, f"║   ▶ {car_info['name']:<40} ║", self.cp(car_info["color_pair"], curses.A_BOLD if curses else 0))
-        self.safe_addstr(box_y + 5, bx, "║  Controls:                                   ║", self.cp(CP_HUD_LABEL))
-        self.safe_addstr(box_y + 6, bx, "║   • [A / D] or [← / →] : Steer & Drift       ║", self.cp(CP_DEFAULT))
-        self.safe_addstr(box_y + 7, bx, "║   • [W / ↑] or [Shift] : Nitro Turbo Boost   ║", self.cp(CP_NITRO))
-        self.safe_addstr(box_y + 8, bx, "║   • [C]                : Change Car Chassis  ║", self.cp(CP_DEFAULT))
-        self.safe_addstr(box_y + 9, bx, "║   • [P]                : Pause / Resume      ║", self.cp(CP_DEFAULT))
-        self.safe_addstr(box_y + 10, bx, "║   • [Q]                : Quit Game           ║", self.cp(CP_DEFAULT))
-        self.safe_addstr(box_y + 11, bx, "╠" + "═" * (box_w - 2) + "╣", self.cp(CP_ROAD_BORDER))
-        self.safe_addstr(box_y + 12, bx, f"║  High Score Record: {self.high_score:<24} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
-        self.safe_addstr(box_y + 13, bx, "╚" + "═" * (box_w - 2) + "╝", self.cp(CP_ROAD_BORDER))
+        self.safe_addstr(box_y + 5, bx, f"║   ⚡ Cannon: {car_info['weapon_name']:<34} ║", self.cp(CP_SPARK))
+        self.safe_addstr(box_y + 6, bx, "║  Combat Controls:                            ║", self.cp(CP_HUD_LABEL))
+        self.safe_addstr(box_y + 7, bx, "║   • [SPACE / J / F]    : FIRE CANNONS!       ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
+        self.safe_addstr(box_y + 8, bx, "║   • [A / D] or [← / →] : Steer & Drift       ║", self.cp(CP_DEFAULT))
+        self.safe_addstr(box_y + 9, bx, "║   • [W / ↑]            : Nitro Turbo Boost   ║", self.cp(CP_NITRO))
+        self.safe_addstr(box_y + 10, bx, "║   • [C]                : Switch Car & Weapon ║", self.cp(CP_DEFAULT))
+        self.safe_addstr(box_y + 11, bx, "║   • [P]                : Pause / Resume      ║", self.cp(CP_DEFAULT))
+        self.safe_addstr(box_y + 12, bx, "║   • [Q]                : Quit Game           ║", self.cp(CP_DEFAULT))
+        self.safe_addstr(box_y + 13, bx, "╠" + "═" * (box_w - 2) + "╣", self.cp(CP_ROAD_BORDER))
+        self.safe_addstr(box_y + 14, bx, f"║  High Score Record: {self.high_score:<24} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
+        self.safe_addstr(box_y + 15, bx, "╚" + "═" * (box_w - 2) + "╝", self.cp(CP_ROAD_BORDER))
 
-        prompt = ">>> PRESS SPACE OR ENTER TO RACE <<<"
-        self.safe_addstr(box_y + 15, max(2, (self.term_width - len(prompt)) // 2), prompt, self.cp(CP_PLAYER, curses.A_BOLD if curses else 0))
+        prompt = ">>> PRESS SPACE OR ENTER TO RACE & DESTROY <<<"
+        self.safe_addstr(box_y + 17, max(2, (self.term_width - len(prompt)) // 2), prompt, self.cp(CP_PLAYER, curses.A_BOLD if curses else 0))
 
     def draw_pause_overlay(self) -> None:
         """Render pause pop-up."""
@@ -1032,7 +1154,7 @@ class TerminalRacingGame:
     def draw_game_over_screen(self) -> None:
         """Render Game Over summary modal."""
         box_w = 36
-        by = self.term_height // 2 - 5
+        by = self.term_height // 2 - 6
         bx = max(2, (self.term_width - box_w) // 2)
 
         self.safe_addstr(by + 0, bx, "╔" + "═" * (box_w - 2) + "╗", self.cp(CP_ENEMY_1, curses.A_BOLD if curses else 0))
@@ -1041,10 +1163,11 @@ class TerminalRacingGame:
         self.safe_addstr(by + 3, bx, f"║  Final Score  : {self.score:<16} ║", self.cp(CP_HUD_VALUE, curses.A_BOLD if curses else 0))
         self.safe_addstr(by + 4, bx, f"║  Best Record  : {self.high_score:<16} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
         self.safe_addstr(by + 5, bx, f"║  Cars Passed  : {self.enemies_passed:<16} ║", self.cp(CP_HUD_VALUE))
-        self.safe_addstr(by + 6, bx, f"║  Top Speed    : {int(self.speed_kmh)} km/h{' ' * 9} ║", self.cp(CP_NITRO))
-        self.safe_addstr(by + 7, bx, "╠" + "═" * (box_w - 2) + "╣", self.cp(CP_ENEMY_1))
-        self.safe_addstr(by + 8, bx, "║    [R] Race Again   [Q] Quit     ║", self.cp(CP_DEFAULT, curses.A_BOLD if curses else 0))
-        self.safe_addstr(by + 9, bx, "╚" + "═" * (box_w - 2) + "╝", self.cp(CP_ENEMY_1))
+        self.safe_addstr(by + 6, bx, f"║  Kills        : 💥 {self.enemies_destroyed:<13} ║", self.cp(CP_GOLD, curses.A_BOLD if curses else 0))
+        self.safe_addstr(by + 7, bx, f"║  Top Speed    : {int(self.speed_kmh)} km/h{' ' * 9} ║", self.cp(CP_NITRO))
+        self.safe_addstr(by + 8, bx, "╠" + "═" * (box_w - 2) + "╣", self.cp(CP_ENEMY_1))
+        self.safe_addstr(by + 9, bx, "║    [R] Race Again   [Q] Quit     ║", self.cp(CP_DEFAULT, curses.A_BOLD if curses else 0))
+        self.safe_addstr(by + 10, bx, "╚" + "═" * (box_w - 2) + "╝", self.cp(CP_ENEMY_1))
 
     def render(self) -> None:
         """Draw the complete game frame."""
@@ -1069,6 +1192,7 @@ class TerminalRacingGame:
         else:
             self.draw_road()
             self.draw_enemies()
+            self.draw_bullets()
             self.draw_player()
             self.draw_particles_and_popups()
             self.draw_hud()
@@ -1081,7 +1205,7 @@ class TerminalRacingGame:
         self.stdscr.refresh()
 
     def ai_steer(self) -> None:
-        """Autonomous AI driver: assesses upcoming traffic threats and steers towards safest lane."""
+        """Autonomous AI driver with auto-targeting cannon fire."""
         if self.state != "PLAYING":
             return
 
@@ -1094,6 +1218,8 @@ class TerminalRacingGame:
                 current_lane = l
 
         lane_danger = [0.0] * ROAD_LANES
+        target_in_line = False
+
         for e in self.enemies:
             vert_dist = self.player_y - e.y
             if 0 < vert_dist < 14:
@@ -1102,6 +1228,12 @@ class TerminalRacingGame:
                     lx = self.get_lane_x(l)
                     if abs(e.x - lx) < 4:
                         lane_danger[l] += weight
+                if abs(e.x - self.player_x) < 4:
+                    target_in_line = True
+
+        # Auto-shoot if enemy in lane
+        if target_in_line:
+            self.shoot()
 
         best_lane = current_lane
         lowest_danger = lane_danger[current_lane]
@@ -1163,7 +1295,7 @@ def simulate_game(frames: int = 50) -> None:
     game.state = "PLAYING"
 
     print("\n" + "=" * 62)
-    print("       >>>  TERMINAL RACING - AUTONOMOUS SIMULATION RUN  <<<")
+    print("       >>>  TERMINAL RACING - EXTREME COMBAT SIMULATION  <<<")
     print("=" * 62 + "\n")
 
     snapshots = [1, 15, 30, 45, frames]
@@ -1175,7 +1307,7 @@ def simulate_game(frames: int = 50) -> None:
         game.render()
 
         if frame in snapshots or frame == frames:
-            print(f"--- [ FRAME {frame}/{frames} | Score: {game.score} | Speed: {int(game.speed_kmh)} km/h | Nitro: {int(game.nitro_fuel)}% ] ---")
+            print(f"--- [ FRAME {frame}/{frames} | Score: {game.score} | Kills: {game.enemies_destroyed} | Speed: {int(game.speed_kmh)} km/h ] ---")
             print(text_screen.render_to_string())
             print("\n" + "-" * 60 + "\n")
             time.sleep(0.05)
@@ -1214,7 +1346,7 @@ def main():
     finally:
         sys.stdout.write("\033[?25h\033[0m")
         sys.stdout.flush()
-        print("\nThanks for playing Terminal Racing! 🏎️💨\n")
+        print("\nThanks for playing Terminal Racing! 🏎️💥\n")
 
 
 if __name__ == "__main__":

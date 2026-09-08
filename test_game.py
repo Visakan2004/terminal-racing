@@ -173,6 +173,31 @@ class TestTerminalRacing(unittest.TestCase):
         self.assertGreaterEqual(self.game.combo_count, 1)
         self.assertGreater(len(self.game.floating_texts), 0)
 
+    def test_shooting_mechanic(self):
+        """Test that shooting spawns bullets and consumes energy."""
+        self.game.state = "PLAYING"
+        self.game.ammo_energy = 100.0
+        self.game.bullets = []
+        shot = self.game.shoot()
+
+        self.assertTrue(shot)
+        self.assertEqual(len(self.game.bullets), 2)  # Twin cannons
+        self.assertLess(self.game.ammo_energy, 100.0)
+
+    def test_bullet_destroys_enemy(self):
+        """Test that bullet impact destroys enemy and adds kills."""
+        self.game.state = "PLAYING"
+        enemy = Enemy(x=20.0, y=10.0, speed=1.0, sprite_type=0, health=1)
+        self.game.enemies = [enemy]
+        # Place a bullet colliding with this enemy
+        self.game.bullets = [
+            from_bullet := __import__('game').Bullet(x=22.0, y=11.0, char='║', color_pair=14)
+        ]
+        self.game.update(0.01)
+
+        self.assertEqual(self.game.enemies_destroyed, 1)
+        self.assertEqual(len(self.game.enemies), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
