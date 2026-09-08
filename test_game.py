@@ -146,6 +146,33 @@ class TestTerminalRacing(unittest.TestCase):
         self.game.state = "PLAYING"
         self.assertEqual(self.game.state, "PLAYING")
 
+    def test_car_selection_and_switch(self):
+        """Test switching player car models."""
+        initial_car = self.game.selected_car_index
+        self.game.selected_car_index = (self.game.selected_car_index + 1) % 4
+        self.assertNotEqual(self.game.selected_car_index, initial_car)
+
+    def test_nitro_boost_mechanic(self):
+        """Test nitro fuel consumption and speed acceleration."""
+        self.game.state = "PLAYING"
+        self.game.nitro_fuel = 100.0
+        self.game.is_boosting = True
+        self.game.update(0.1)
+
+        self.assertLess(self.game.nitro_fuel, 100.0)
+        self.assertGreater(self.game.target_speed_kmh, 100.0)
+
+    def test_near_miss_combo_system(self):
+        """Test near-miss triggers combo points and particles."""
+        self.game.state = "PLAYING"
+        initial_score = self.game.score
+        enemy = Enemy(x=self.game.player_x + CAR_WIDTH + 1, y=self.game.player_y, speed=1.0, sprite_type=0)
+        self.game.trigger_near_miss(enemy)
+
+        self.assertGreater(self.game.score, initial_score)
+        self.assertGreaterEqual(self.game.combo_count, 1)
+        self.assertGreater(len(self.game.floating_texts), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
