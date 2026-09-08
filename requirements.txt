@@ -1,0 +1,4 @@
+# Terminal Racing - Dependencies
+#
+# The game runs on Python 3 standard library modules (curses, time, random, os, sys, dataclasses).
+# No external pip packages are required for standard Linux / Docker environments.
